@@ -32,6 +32,10 @@ function App() {
   const [email, setEmail] = useState('');
   // set state for password change
   const [password, setPassword] = useState('');
+  // set state for password field error related
+  const [error, setError] = useState('');
+  // set state for login field success related
+  const [success, setSuccess] = useState('');
   // Handle email input
   const handleEmail = (e) => {
     e.preventDefault();
@@ -45,10 +49,38 @@ function App() {
   // handle register by password firebase
   const loggedInWithPassword = (e) => {
     e.preventDefault();
-    createUserWithEmailAndPassword(auth, email, password).then((result) => {
-      const registerUserLogIn = result.user;
-      console.log(registerUserLogIn);
-    });
+    if (password.length < 6) {
+      setError('Password must be at least Six characters long');
+      return;
+    }
+    if (!/^(?=.*\d)/.test(password)) {
+      setError('Password must contain a number');
+      return;
+    }
+    if (!/^(?=.*[a-z])/.test(password)) {
+      setError('Password must contain a small letter');
+      return;
+    }
+    if (!/^(?=.*[A-Z])/.test(password)) {
+      setError('Password must contain a capital letter');
+      return;
+    }
+    if (!/^(?=.*[!#$%&? "])/.test(password)) {
+      setError('Password must contain a special character');
+      return;
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((result) => {
+        const registerUserLogIn = result.user;
+        console.log(registerUserLogIn);
+        setError('');
+        setSuccess('Login Success');
+        document.getElementById('inputPassword3').value = '';
+        document.getElementById('inputEmail3').value = '';
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
     // console.log('working handle');
   };
   return (
@@ -81,6 +113,7 @@ function App() {
                 type='email'
                 className='form-control'
                 id='inputEmail3'
+                required
               />
             </div>
           </div>
@@ -94,6 +127,7 @@ function App() {
                 type='password'
                 className='form-control'
                 id='inputPassword3'
+                required
               />
             </div>
           </div>
@@ -110,6 +144,8 @@ function App() {
                   Example checkbox
                 </label>
               </div>
+              <div className='text-danger'>{error}</div>
+              <div className='text-success'>{success}</div>
               <button type='submit' className='btn btn-primary'>
                 Register
               </button>
